@@ -29,6 +29,13 @@ export default class ReactDragManager {
     currentNodeOldIndex: string;
     currentSurfaceNode: HTMLDivElement | null;
     eventListeners: EventListenerManager;
+    dragCancelledOnDrop: boolean;
+    constructor(config?: {
+        [prop: string]: any;
+    });
+    configure(config: {
+        [prop: string]: any;
+    }): void;
     addEventListener(type: DragEvent, className: string, callback: Function): void;
     addDragItem(node: HTMLDivElement, item: DraggableItem | null): void;
     removeDragItem(node: ReactNode, item: DraggableItem | null): void;

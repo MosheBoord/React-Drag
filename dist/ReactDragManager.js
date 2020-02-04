@@ -13,7 +13,7 @@ const DRAG_ENTERED = "DRAG_ENTERED";
 const DRAG_EXITED = "DRAG_EXITED";
 const DRAG_ENDED = "DRAG_ENDED";
 export default class ReactDragManager {
-    constructor() {
+    constructor(config) {
         this.draggableItems = new TypedMap();
         this.dragSurfaces = new TypedMap();
         this.startingTopPosition = 0;
@@ -31,6 +31,17 @@ export default class ReactDragManager {
             DRAG_EXITED: {},
             DRAG_ENDED: {},
         };
+        this.dragCancelledOnDrop = false;
+        for (let key in config) {
+            // the next line was giving me an error, that is why it is written as such
+            this[key] = config[key];
+        }
+    }
+    configure(config) {
+        for (let key in config) {
+            // the next line was giving me an error, that is why it is written as such
+            this[key] = config[key];
+        }
     }
     addEventListener(type, className, callback) {
         if (this.eventListeners[type][className]) {
@@ -72,12 +83,13 @@ export default class ReactDragManager {
             });
         }
     }
+    // cancelDrag() {}
     initiateDragEndedEvent() {
         const currentDragItem = this.draggableItems.get(this.currentDragNode);
+        const currentDragSurface = this.dragSurfaces.get(this.currentSurfaceNode);
         if (!currentDragItem) {
             return;
         }
-        const currentDragSurface = this.dragSurfaces.get(this.currentSurfaceNode);
         let classesToFire;
         if (!currentDragSurface) {
             classesToFire = currentDragItem.className.split(" ");
@@ -155,6 +167,10 @@ function setupDragItemEventListeners(node, manager) {
         };
         document.onmouseup = (e) => {
             manager.initiateDragEndedEvent();
+            if (manager.dragCancelledOnDrop) {
+                node.style.left = manager.startingLeftPosition + "px";
+                node.style.top = manager.startingTopPosition + "px";
+            }
             manager.currentDragNode = null;
             document.onmouseup = null;
             document.onmousemove = null;

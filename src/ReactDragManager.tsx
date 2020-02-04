@@ -50,7 +50,27 @@ export default class ReactDragManager {
         DRAG_EXITED: {},
         DRAG_ENDED: {},
     };
-    addEventListener(type: DragEvent, className: string, callback: Function) {
+    dragCancelledOnDrop: boolean = false;
+
+    constructor(config?: { [prop: string]: any }) {
+        for (let key in config) {
+            // the next line was giving me an error, that is why it is written as such
+            (this as any)[key] = config[key];
+        }
+    }
+
+    configure(config: { [prop: string]: any }): void {
+        for (let key in config) {
+            // the next line was giving me an error, that is why it is written as such
+            (this as any)[key] = config[key];
+        }
+    }
+
+    addEventListener(
+        type: DragEvent,
+        className: string,
+        callback: Function
+    ): void {
         if (this.eventListeners[type][className]) {
             this.eventListeners[type][className].push(callback);
         } else {
@@ -99,16 +119,16 @@ export default class ReactDragManager {
         }
     }
 
+    // cancelDrag() {}
+
     initiateDragEndedEvent() {
         const currentDragItem = this.draggableItems.get(this.currentDragNode!);
-        if (!currentDragItem) {
-            return;
-        }
-
         const currentDragSurface = this.dragSurfaces.get(
             this.currentSurfaceNode!
         );
-
+        if (!currentDragItem) {
+            return;
+        }
         let classesToFire;
         if (!currentDragSurface) {
             classesToFire = currentDragItem!.className.split(" ");
@@ -234,6 +254,10 @@ function setupDragItemEventListeners(
 
         document.onmouseup = (e: MouseEvent) => {
             manager.initiateDragEndedEvent();
+            if (manager.dragCancelledOnDrop) {
+                node.style.left = manager.startingLeftPosition + "px";
+                node.style.top = manager.startingTopPosition + "px";
+            }
             manager.currentDragNode = null;
             document.onmouseup = null;
             document.onmousemove = null;
